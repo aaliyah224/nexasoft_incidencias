@@ -12,9 +12,21 @@ class GestorIncidencias {
         incidencias.where((x) => x.estado == 'Pendiente').length;
   }
 
+  // BUG-002: Buscar sin distinguir mayúsculas y minúsculas.
   List<Incidencia> buscar(String texto) {
-    if (texto.trim().isEmpty) return incidencias;
-    return incidencias.where((x) => x.titulo.contains(texto)).toList();
+    // Quitamos espacios y convertimos el texto a minúsculas.
+    String busqueda = texto.trim().toLowerCase();
+
+    // Si el buscador está vacío, mostramos todas las incidencias.
+    if (busqueda.isEmpty) {
+      return incidencias;
+    }
+
+    // Revisamos los títulos de todas las incidencias.
+    return incidencias.where((x) {
+      // Convertimos el título a minúsculas y buscamos coincidencias.
+      return x.titulo.toLowerCase().contains(busqueda);
+    }).toList();
   }
 
   Incidencia? porId(String id) {
