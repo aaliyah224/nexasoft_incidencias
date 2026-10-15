@@ -36,10 +36,11 @@ class GestorIncidencias {
     return null;
   }
 
-  int contar(String estado) {
-    if (estado == 'Pendiente') return cantidadPendientes;
-    return incidencias.where((x) => x.estado == estado).length;
-  }
+  // BUG-003: Actualizar correctamente el contador de incidencias.
+int contar(String estado) {
+  // Contamos las incidencias que tienen el estado solicitado.
+  return incidencias.where((x) => x.estado == estado).length;
+}
 
   Future<void> cambiarEstado(String id, String estado) async {
     for (var i = 0; i < incidencias.length; i++) {
