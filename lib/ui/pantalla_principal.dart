@@ -17,11 +17,22 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   String? error;
   String busqueda = '';
 
+  String filtroEstado = 'Todos';
+  String filtroPrioridad = 'Todas';
+  // FEAT-002: Controlador para limpiar el texto del buscador.
+final controladorBusqueda = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     cargar();
   }
+
+  @override
+void dispose() {
+  controladorBusqueda.dispose();
+  super.dispose();
+}
 
   Future<void> cargar() async {
     setState(() {
@@ -99,7 +110,13 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   @override
   Widget build(BuildContext context) {
-    final items = g.buscar(busqueda);
+    
+    // FEAT-002: Aplicar los tres filtros al mismo tiempo.
+    final items = g.buscar(
+      busqueda,
+      estado: filtroEstado,
+      prioridad: filtroPrioridad,
+    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('NexaSoft | Incidencias'),
@@ -166,6 +183,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 5),
                           child: TextField(
+                            controller: controladorBusqueda,
                             decoration: const InputDecoration(
                               labelText: 'Buscar incidencias',
                               hintText: 'Ejemplo: WiFi, correo, pantalla',
@@ -175,6 +193,98 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                             onChanged: (texto) => setState(() => busqueda = texto),
                           ),
                         ),
+                        
+                        // FEAT-002: Filtros de estado y prioridad.
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 17,
+                            vertical: 8,
+                          ),
+                          child: Column(
+                            children: [
+                              // Usamos Wrap para adaptar los filtros
+                              // a pantallas grandes y pequeñas.
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: [
+                                  SizedBox(
+                                    width: 230,
+                                    child: DropdownButtonFormField<String>(
+                                       key: ValueKey('estado-$filtroEstado'),
+                                      initialValue: filtroEstado,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Filtrar por estado',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      items: [
+                                        'Todos',
+                                        'Pendiente',
+                                        'En proceso',
+                                        'Resuelta',
+                                      ].map((e) => DropdownMenuItem(
+                                            value: e,
+                                            child: Text(e),
+                                          )).toList(),
+                                      onChanged: (valor) {
+                                        setState(() {
+                                          filtroEstado = valor ?? 'Todos';
+                                        });
+                                      },
+                                    ),
+                                  ),
+
+                                  SizedBox(
+                                    width: 230,
+                                    child: DropdownButtonFormField<String>(
+                                      key: ValueKey('prioridad-$filtroPrioridad'),
+                                      initialValue: filtroPrioridad,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Filtrar por prioridad',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      items: [
+                                        'Todas',
+                                        'Baja',
+                                        'Media',
+                                        'Alta',
+                                      ].map((p) => DropdownMenuItem(
+                                            value: p,
+                                            child: Text(p),
+                                          )).toList(),
+                                      onChanged: (valor) {
+                                        setState(() {
+                                          filtroPrioridad = valor ?? 'Todas';
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              // Botón para restablecer los filtros.
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                      // Limpiamos el texto escrito.
+                                    controladorBusqueda.clear();
+                                    setState(() {
+                                      filtroEstado = 'Todos';
+                                      filtroPrioridad = 'Todas';
+                                      busqueda = '';
+                                    });
+                                  },
+                                  icon: const Icon(Icons.filter_alt_off),
+                                  label: const Text('Limpiar filtros'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                           child: Align(

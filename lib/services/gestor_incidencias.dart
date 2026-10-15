@@ -9,20 +9,33 @@ Future<void> iniciar() async {
   // Cargamos las incidencias que están guardadas.
   incidencias = await datos.leer();
 }
-  // BUG-002: Buscar sin distinguir mayúsculas y minúsculas.
-  List<Incidencia> buscar(String texto) {
-    // Quitamos espacios y convertimos el texto a minúsculas.
+ 
+  // FEAT-002: Buscar incidencias combinando texto, estado y prioridad.
+  List<Incidencia> buscar(
+    String texto, {
+    String estado = 'Todos',
+    String prioridad = 'Todas',
+  }) {
+    // BUG-002: La búsqueda no distingue mayúsculas y minúsculas.
     String busqueda = texto.trim().toLowerCase();
 
-    // Si el buscador está vacío, mostramos todas las incidencias.
-    if (busqueda.isEmpty) {
-      return incidencias;
-    }
-
-    // Revisamos los títulos de todas las incidencias.
     return incidencias.where((x) {
-      // Convertimos el título a minúsculas y buscamos coincidencias.
-      return x.titulo.toLowerCase().contains(busqueda);
+
+      // Comprobamos si el título contiene el texto buscado.
+      bool coincideTexto =
+          x.titulo.toLowerCase().contains(busqueda);
+
+      // Si seleccionamos "Todos", aceptamos cualquier estado.
+      bool coincideEstado =
+          estado == 'Todos' || x.estado == estado;
+
+      // Si seleccionamos "Todas", aceptamos cualquier prioridad.
+      bool coincidePrioridad =
+          prioridad == 'Todas' || x.prioridad == prioridad;
+
+      // La incidencia debe cumplir las tres condiciones.
+      return coincideTexto && coincideEstado && coincidePrioridad;
+
     }).toList();
   }
 
