@@ -14,6 +14,30 @@ class PantallaDetalle extends StatefulWidget {
 class _PantallaDetalleState extends State<PantallaDetalle> {
   bool guardando = false;
 
+  
+  // FEAT-001: Cambiar la prioridad de una incidencia.
+  Future<void> cambiarPrioridad(String? valor) async {
+    if (valor == null) return;
+
+    setState(() => guardando = true);
+
+    try {
+      // Pedimos al gestor que actualice y guarde la prioridad.
+      await widget.gestor.cambiarPrioridad(widget.id, valor);
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo guardar la prioridad: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => guardando = false);
+    }
+  }
+
+
   Future<void> cambiar(String? valor) async {
     if (valor == null) return;
     setState(() => guardando = true);
@@ -77,6 +101,26 @@ class _PantallaDetalleState extends State<PantallaDetalle> {
                           .toList(),
                       onChanged: guardando ? null : cambiar,
                     ),
+                    
+                    const SizedBox(height: 15),
+
+                    // FEAT-001: Mostrar y modificar la prioridad.
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('prioridad-${item.prioridad}'),
+                      initialValue: item.prioridad,
+                      decoration: const InputDecoration(
+                        labelText: 'Prioridad',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ['Baja', 'Media', 'Alta']
+                          .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p),
+                              ))
+                          .toList(),
+                      onChanged: guardando ? null : cambiarPrioridad,
+                    ),
+
                     if (guardando) const Padding(
                       padding: EdgeInsets.only(top: 12), child: LinearProgressIndicator(),
                     ),

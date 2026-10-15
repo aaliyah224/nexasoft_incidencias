@@ -15,6 +15,7 @@ class _PantallaNuevaState extends State<PantallaNueva> {
   final descripcion = TextEditingController();
   final cliente = TextEditingController();
   String categoria = 'Software';
+  String prioridad = 'Media';
   bool ocupado = false;
 
   @override
@@ -29,9 +30,15 @@ class _PantallaNuevaState extends State<PantallaNueva> {
     if (!(llave.currentState?.validate() ?? false)) return;
     setState(() => ocupado = true);
     try {
+
       await widget.gestor.crear(
-        titulo.text.trim(), descripcion.text.trim(), cliente.text.trim(), categoria,
-      );
+         titulo.text.trim(),
+         descripcion.text.trim(),
+         cliente.text.trim(),
+         categoria,
+          prioridad,
+  );
+    
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
@@ -71,15 +78,48 @@ class _PantallaNuevaState extends State<PantallaNueva> {
                 campo('Título', titulo),
                 campo('Descripción', descripcion, lineas: 4),
                 campo('Cliente', cliente),
+               
+                // Selector de categoría.
                 DropdownButtonFormField<String>(
                   value: categoria,
-                  decoration: const InputDecoration(labelText: 'Categoría', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Categoría',
+                    border: OutlineInputBorder(),
+                  ),
                   items: ['Software', 'Hardware', 'Redes']
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                  onChanged: ocupado ? null : (v) => setState(() => categoria = v ?? 'Software'),
+                      .map((c) => DropdownMenuItem(
+                            value: c,
+                            child: Text(c),
+                          ))
+                      .toList(),
+                  onChanged: ocupado
+                      ? null
+                      : (v) => setState(() => categoria = v ?? 'Software'),
                 ),
+
+                const SizedBox(height: 15),
+
+                // FEAT-001: Selector de prioridad.
+                DropdownButtonFormField<String>(
+                  initialValue: prioridad,
+                  decoration: const InputDecoration(
+                    labelText: 'Prioridad',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: ['Baja', 'Media', 'Alta']
+                      .map((p) => DropdownMenuItem(
+                            value: p,
+                            child: Text(p),
+                          ))
+                      .toList(),
+                  onChanged: ocupado
+                      ? null
+                      : (v) => setState(() => prioridad = v ?? 'Media'),
+                ),
+
                 const SizedBox(height: 24),
                 FilledButton.icon(
+
                   onPressed: ocupado ? null : guardar,
                   icon: const Icon(Icons.save_outlined),
                   label: const Text('Registrar'),
